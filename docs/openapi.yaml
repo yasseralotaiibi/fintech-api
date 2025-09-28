@@ -1,0 +1,185 @@
+openapi: 3.0.3
+info:
+  title: Riyada Open Banking MVP API
+  version: 0.1.0
+  description: |
+    Mocked Saudi Open Banking platform implementing CIBA-inspired flows, consent management, and local ecosystem stubs.
+servers:
+  - url: http://localhost:3000/api
+paths:
+  /ciba/auth/request:
+    post:
+      summary: Initiate a mock CIBA authentication request
+      tags: [CIBA]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - client_id
+                - login_hint
+              properties:
+                client_id:
+                  type: string
+                login_hint:
+                  type: string
+                scope:
+                  type: string
+                  description: Space delimited scopes
+      responses:
+        '202':
+          description: Auth request accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_req_id:
+                    type: string
+                  expires_in:
+                    type: integer
+                  interval:
+                    type: integer
+        '400':
+          description: Invalid payload
+  /ciba/auth/token:
+    post:
+      summary: Poll for tokens after approval
+      tags: [CIBA]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - auth_req_id
+              properties:
+                auth_req_id:
+                  type: string
+      responses:
+        '200':
+          description: Tokens issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  id_token:
+                    type: string
+                  token_type:
+                    type: string
+                  expires_in:
+                    type: integer
+                  scope:
+                    type: string
+        '400':
+          description: Authorization pending or denied
+        '404':
+          description: auth_req_id not found
+  /mock/nafath/approve:
+    post:
+      summary: Simulate Nafath approval of a CIBA request
+      tags: [Mocks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - auth_req_id
+              properties:
+                auth_req_id:
+                  type: string
+                subject:
+                  type: string
+      responses:
+        '200':
+          description: Approval recorded
+  /mock/nafath/deny:
+    post:
+      summary: Simulate Nafath denial of a CIBA request
+      tags: [Mocks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - auth_req_id
+              properties:
+                auth_req_id:
+                  type: string
+      responses:
+        '200':
+          description: Denial recorded
+  /consents:
+    post:
+      summary: Create a consent resource
+      security:
+        - OAuth2:
+            - consents:create
+      tags: [Consents]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - client_id
+                - customer_id
+              properties:
+                client_id:
+                  type: string
+                customer_id:
+                  type: string
+                scopes:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Consent created
+    get:
+      summary: List consents
+      security:
+        - OAuth2:
+            - consents:read
+      tags: [Consents]
+      responses:
+        '200':
+          description: Collection of consents
+  /consents/{id}:
+    delete:
+      summary: Revoke a consent by identifier
+      security:
+        - OAuth2:
+            - consents:revoke
+      tags: [Consents]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Consent revoked
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://example.com/token
+          scopes:
+            consents:create: Create new consent resources
+            consents:read: Read consent resources
+            consents:revoke: Revoke consent resources
