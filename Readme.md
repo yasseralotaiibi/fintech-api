@@ -1,103 +1,115 @@
-<h1 align=center> FinTech API v2</h1>
+# Riyada OpenBanking MVP
 
-<p align=center>
-Welcome to FinTech API, our powerful API is designed to simplify your life by offering a wide range of financial calculations at your fingertips. From simple interest and compound interest to return on investment (ROI) and more, FinTech APIzap provides the tools you need to handle a variety of financial tasks effortlessly such as annual percentage rate (APR), FHA loans, debt-to-income ratio and income related calculations. Whether you're building a web app, mobile application, or even a chrome extension, integrating our API is a breeze.  You can focus on the core aspects of your project while leaving the financial calculations to us. </p>
+The Riyada OpenBanking MVP is a Saudi Open Banking platform scaffold aligned with the Saudi Central Bank (SAMA) Account Information Service (AIS) and Payment Initiation Service (PIS) frameworks. It provides a mocked **Client Initiated Backchannel Authentication (CIBA)** journey, consent APIs, national connector stubs, and compliance hooks mapped to **FAPI Advanced + CIBA** and the Saudi Personal Data Protection Law (PDPL).
 
-<div align="center">
-  <br>
-  <img src="https://img.shields.io/github/repo-size/Clueless-Community/fintech-api.svg?style=for-the-badge&logo=appveyor" />
-  <img src="https://img.shields.io/github/issues/Clueless-Community/fintech-api.svg?style=for-the-badge&logo=appveyor" />
-  <img src="https://img.shields.io/github/issues-closed-raw/Clueless-Community/fintech-api.svg?style=for-the-badge&logo=appveyor" />
-  <br>
-  <img src="https://img.shields.io/github/forks/Clueless-Community/fintech-api.svg?style=for-the-badge&logo=appveyor" />
-  <img src="https://img.shields.io/github/issues-pr/Clueless-Community/fintech-api.svg?style=for-the-badge&logo=appveyor" />
-  <img src="https://img.shields.io/github/issues-pr-closed-raw/Clueless-Community/fintech-api.svg?style=for-the-badge&logo=appveyor" />
-  <br>
-  <img src="https://img.shields.io/github/stars/Clueless-Community/fintech-api.svg?style=for-the-badge&logo=appveyor" />
-  <img src="https://img.shields.io/github/last-commit/Clueless-Community/fintech-api.svg?style=for-the-badge&logo=appveyor" />
-</div>
+## Platform Highlights
 
-![ClueLess x GSSOC](https://github.com/Clueless-Community/fintech-api/assets/93722719/978d4ad0-6353-450a-b144-bb591b71223f)
+- **Mocked CIBA backchannel flow** with Nafath-style approval simulation and token polling.
+- **Consent-as-a-Service APIs** with PDPL hooks for receipts, audit logging, and minimisation checks.
+- **Connector stubs** for Nafath, Absher, and SIMAH ready to be swapped for real integrations.
+- **Security middlewares** for JWT validation, nonce enforcement, rate limiting, mTLS/JWS placeholders, and Helmet hardening.
+- **Postgres + Prisma models** for consents/audit trails and Redis-backed CIBA state management.
+- **Developer experience** featuring OpenAPI docs, Swagger UI, and a static demo UI walking through the journey.
+- **Containerised stack** (Node.js API, Postgres, Redis) for rapid local spin-up.
 
-## ✨ Features
+## Getting Started
 
-- **Modular structure**: Not the API has a clean structure which benifits in improved code organizationqn and enhanced reusability of components
+### Prerequisites
 
-- **Request validation**: It improves security, prevents errors and vulnerabilities to the API
+- Node.js 18+
+- npm 9+
+- Docker + Docker Compose (for the containerised stack)
 
-- **API Docs**: API documentation provides clear and comprehensive guidance to developers, simplifies integration and usage, promotes rapid adoption
+### Local Development
 
-- **Authentication**: And finally the API has authentication enabled, for endpoints with much latency calculation, we can provide authentication which will enhance security.
+1. Copy `.env.example` to `.env` and adjust secrets if required.
+2. Install dependencies and generate the Prisma client.
+3. Run the API in watch mode.
 
-- **User-Friendly Integration**: Seamlessly integrate the FinTech APIzap into your web app, mobile application, or chrome extension with our user-friendly API.
-
-- **Fast and Reliable**: Enjoy a fast and reliable API service, ensuring quick response times and minimal downtime.
-
-- **Scalability**: Scale your projects effortlessly as FinTech APIzap supports high volumes of requests and can handle increased traffic.
-
-- **Customizable Options**: Tailor the API's parameters and settings to suit your specific requirements and calculations.
-
-- **Developer Community**: Join our thriving developer community for support, updates, and collaboration with like-minded professionals.
-
-
-## 💻 Tech Stack 
-
-  [![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)](https://www.python.org/doc/)
-  [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
-
-
-## ✨ How to use it? 
-
-### To use FinTech API in your project, follow these steps:
-- Sign up and obtain API credentials
-- Install necessary dependencies
-      - Python3.9x installed on your machine.
-      - Install the package using `pip`: (by Copying requirements.txt ./)
 ```bash
-  pip install --no-cache-dir -r requirements.txt
+# Clone repo
+git clone <repo-url>
+cd openbanking-mvp
+
+# Install deps
+npm install
+
+# Run in dev mode
+npm run dev
+
+# Run dockerized stack
+docker-compose up --build
+
+# Run tests
+npm run test
+
+# View API docs
+http://localhost:3000/docs
 ```
 
-- Make API requests
-- Handle API responses
-- Test and debug
-- Integrate into your project
+The API listens on `http://localhost:3000`. Swagger UI serves the OpenAPI contract at `/docs`, while the static walkthrough is available at `/demo`.
 
+### Database & Prisma
 
-## ✨ Contributing Roadmap
+- Database URL defaults to `postgresql://postgres:postgres@localhost:5432/openbanking`.
+- Run `npm run db:migrate` to create/update the schema and `npm run db:seed` to load starter consents.
+- Prisma models cover `Consent` and `AuditLog` tables with enum-backed statuses.
 
- - Go through the [CONTRIBUTING.md](https://github.com/Clueless-Community/fintech-api/blob/main/CONTRIBUTING.md) file, where all the guidelines have been mentioned that will guide you to make your contribution.
- - Do checkout the [project workflow](https://github.com/Clueless-Community/fintech-api/blob/main/CONTRIBUTING.md#project-workflow) section.
+## Project Structure
 
-Join our growing community of developers who have already discovered the power of FinTech APIzap and contribute to the project's ambition to empower users with the ability to handle financial tasks efficiently.
+```
+├── src
+│   ├── auth/           # CIBA services + mock Nafath routes
+│   ├── consents/       # Consent router
+│   ├── connectors/     # Nafath, Absher, SIMAH stubs
+│   ├── config/         # Env, logger, Prisma, Redis helpers
+│   ├── middleware/     # JWT, nonce, rate limiting, security placeholders
+│   ├── services/       # Consent service orchestrating PDPL hooks
+│   └── utils/          # PDPL helper stubs
+├── docs/               # OpenAPI spec + static demo UI
+├── prisma/             # Prisma schema and seed script
+├── tests/              # Jest + Supertest skeletons for auth & consent flows
+├── Dockerfile          # Multi-stage image (dev + prod)
+└── docker-compose.yml  # API + Postgres + Redis stack
+```
 
+## Security & Compliance Placeholders
 
-## ✨ Open Source Participation
+- **JWT validation** middleware models FAPI Advanced bearer token enforcement.
+- **Nonce enforcement** protects against replay per FAPI Advanced requirements.
+- **Helmet + rate limiting** baseline hardening.
+- **mTLS and JWS placeholders** indicate where financial-grade controls will plug in.
+- **PDPL functions** (`issueConsentReceipt`, `assertDataMinimisation`, `appendAuditTrail`) surface integration points for regulatory artefacts and immutable logging.
 
-This project is a part of these Open Source Programs
+## Developer Tooling
 
-- [Diversion 2K23](https://diversion.tech/)
-- [GSSoC 2K23](https://gssoc.girlscript.tech/)
+- **ESLint + Prettier** enforce consistent TypeScript style (`npm run lint`, `npm run format`).
+- **Jest** skeletons demonstrate auth and consent scenarios using Supertest (`npm run test`).
+- **Swagger UI** is automatically served for the OpenAPI contract.
+- **Static demo UI** demonstrates the mocked login → approval → token polling journey.
 
+## Docker Compose Stack
 
-## ✨ Thank You for Your Contribution!
-Thanks a lot for spending your time helping fintech-api grow. Thanks a lot! Keep rocking 🍻
-<p>
-  <img src="https://api.vaunt.dev/v1/github/entities/Clueless-Community/repositories/fintech-api/contributors?format=svg&limit=54" width="600" height"250" />
-</p>
-<p align=center>
-<a href="https://github.com/Clueless-Community/fintech-api/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Clueless-Community/fintech-api" />
-</a></p>
+Running `docker-compose up --build` starts:
 
-🙏 Thank you for your interest in contributing to our project! We appreciate any contributions, whether it's bug fixes, new features, or documentation improvements.
+- `api`: Node.js service (ts-node-dev) with hot reload.
+- `postgres`: Postgres 15 with persisted volume (`pgdata`).
+- `redis`: Redis 7 for nonce & CIBA session state (`redisdata`).
 
-🌟 We value the time and effort you put into contributing, and we look forward to reviewing and merging your contributions.  Say goodbye to the hassle of manual calculations and hello to seamless financial integration. 
+After the containers are healthy, run migrations and seeds inside the API container if required:
 
-✨ Once again, thank you for your contribution!
+```bash
+docker-compose exec api npm run db:migrate
+docker-compose exec api npm run db:seed
+```
 
+## Next Steps
 
-## ✨ License
+- Replace connector stubs with live Nafath, Absher, and SIMAH integrations.
+- Implement mTLS certificate validation and full JOSE (JWS/JWE) request/response signing.
+- Extend PDPL hooks with production-grade consent receipt storage and immutable audit log sinks.
+- Build out AIS/PIS domain APIs, fintech partner onboarding flows, and observability pipelines.
 
-The project is licensed under the [MIT License](https://github.com/neelshah2409/Bot-Collection/blob/main/LICENSE).
+## License
 
----
+Apache 2.0
