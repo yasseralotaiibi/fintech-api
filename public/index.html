@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Riyada Open Banking Demo</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Riyada Open Banking – Mocked Consent Walkthrough</h1>
+      <p>
+        This static sandbox walks through the mocked CIBA login + consent flow required for Saudi Open Banking pilots.
+        Provide a development JWT, set the scopes, and simulate Nafath approval.
+      </p>
+
+      <section>
+        <h2>Step 1 — Initiate CIBA Authentication</h2>
+        <form id="auth-form">
+          <label>
+            Client ID
+            <input type="text" id="clientId" value="demo-client" required />
+          </label>
+          <label>
+            Requested scopes (space separated)
+            <input type="text" id="scopes" value="accounts.read payments.initiate" />
+          </label>
+          <label>
+            Bearer token (HS256 signed with insecure sandbox key)
+            <input type="text" id="bearerToken" placeholder="Paste development JWT" />
+          </label>
+          <button type="submit">Send CIBA Request</button>
+        </form>
+        <pre id="auth-response"></pre>
+      </section>
+
+      <section>
+        <h2>Step 2 — Simulate Nafath Approval</h2>
+        <form id="nafath-form">
+          <label>
+            Auth Request ID
+            <input type="text" id="nafathAuthId" required />
+          </label>
+          <label>
+            National ID
+            <input type="text" id="nationalId" value="1234567890" />
+          </label>
+          <div>
+            <button type="submit" data-action="approve">Approve</button>
+            <button type="submit" data-action="deny" class="secondary">Deny</button>
+          </div>
+        </form>
+        <pre id="nafath-response"></pre>
+      </section>
+
+      <section>
+        <h2>Step 3 — Poll Token Endpoint</h2>
+        <form id="token-form">
+          <label>
+            Auth Request ID
+            <input type="text" id="tokenAuthId" required />
+          </label>
+          <button type="submit">Poll</button>
+        </form>
+        <pre id="token-response"></pre>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

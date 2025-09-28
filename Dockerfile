@@ -1,11 +1,13 @@
-FROM python:3.9
+FROM node:20-alpine AS base
 
-WORKDIR ./app
+WORKDIR /usr/src/app
 
-COPY requirements.txt ./
+COPY package.json package-lock.json* tsconfig.json .eslintrc.js .prettierrc jest.config.js ./
+COPY prisma ./prisma
+COPY src ./src
+COPY docs ./docs
+COPY public ./public
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN npm install
 
-COPY . .
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["npm", "run", "dev"]
