@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Consent {
+  id        String   @id @default(uuid())
+  subject   String
+  clientId  String
+  scope     String[]
+  status    String
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+  auditLogs AuditLog[]
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  actor     String
+  details   Json
+  createdAt DateTime @default(now())
+  consent   Consent? @relation(fields: [consentId], references: [id])
+  consentId String?
+}
