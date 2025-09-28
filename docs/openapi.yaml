@@ -1,0 +1,254 @@
+openapi: 3.0.3
+info:
+  title: Riyada Open Banking MVP API
+  version: 0.1.0
+  description: |
+    Mocked Saudi Open Banking platform aligned with SAMA AIS/PIS mandates.
+    Implements CIBA style authentication, consent management, and national connector stubs.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    nonceHeader:
+      type: apiKey
+      in: header
+      name: x-jti
+      description: FAPI Advanced nonce header to protect against replay
+  schemas:
+    Consent:
+      type: object
+      properties:
+        id:
+          type: string
+        subject:
+          type: string
+        clientId:
+          type: string
+        scope:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: true
+paths:
+  /ciba/auth/request:
+    post:
+      tags:
+        - CIBA
+      summary: Initiate mocked CIBA authentication flow
+      security:
+        - bearerAuth: []
+          nonceHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                client_id:
+                  type: string
+                scope:
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+              required:
+                - client_id
+      responses:
+        '201':
+          description: Authentication request created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_req_id:
+                    type: string
+                  expires_in:
+                    type: integer
+                  interval:
+                    type: integer
+        '400':
+          description: Invalid client request
+  /ciba/auth/token:
+    post:
+      tags:
+        - CIBA
+      summary: Poll token endpoint for approved authentication request
+      security:
+        - bearerAuth: []
+          nonceHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - auth_req_id
+              properties:
+                auth_req_id:
+                  type: string
+      responses:
+        '200':
+          description: Tokens issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  id_token:
+                    type: string
+                  token_type:
+                    type: string
+                  expires_in:
+                    type: integer
+        '202':
+          description: Authentication pending approval
+        '403':
+          description: Authentication denied
+        '404':
+          description: auth_req_id not found
+  /mock/nafath/approve:
+    post:
+      tags:
+        - Mocks
+      summary: Approve a pending CIBA request via mocked Nafath connector
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - auth_req_id
+                - national_id
+              properties:
+                auth_req_id:
+                  type: string
+                national_id:
+                  type: string
+      responses:
+        '200':
+          description: Authentication approved
+  /mock/nafath/deny:
+    post:
+      tags:
+        - Mocks
+      summary: Deny a pending CIBA request via mocked Nafath connector
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - auth_req_id
+                - national_id
+              properties:
+                auth_req_id:
+                  type: string
+                national_id:
+                  type: string
+      responses:
+        '200':
+          description: Authentication denied
+  /consents:
+    post:
+      tags:
+        - Consents
+      summary: Create PDPL-compliant consent record
+      security:
+        - bearerAuth: []
+          nonceHeader: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - subject
+                - client_id
+              properties:
+                subject:
+                  type: string
+                client_id:
+                  type: string
+                scope:
+                  oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                expires_at:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Consent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consent'
+    get:
+      tags:
+        - Consents
+      summary: List consent records
+      security:
+        - bearerAuth: []
+          nonceHeader: []
+      parameters:
+        - name: subject
+          in: query
+          schema:
+            type: string
+          required: false
+      responses:
+        '200':
+          description: Consent list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Consent'
+  /consents/{id}:
+    delete:
+      tags:
+        - Consents
+      summary: Revoke consent
+      security:
+        - bearerAuth: []
+          nonceHeader: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Consent revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consent'
+        '404':
+          description: Consent not found
