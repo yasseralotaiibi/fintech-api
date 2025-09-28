@@ -1,11 +1,30 @@
-FROM python:3.9
+# syntax=docker/dockerfile:1
 
-WORKDIR ./app
+FROM node:20-alpine AS base
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install
+COPY tsconfig.json ./
+COPY prisma ./prisma
+COPY src ./src
+COPY docs ./docs
 
-COPY requirements.txt ./
+FROM base AS build
+RUN npm run build
 
-RUN pip install --no-cache-dir -r requirements.txt
-
+FROM node:20-alpine AS development
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install
 COPY . .
+CMD ["npm", "run", "dev"]
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+FROM node:20-alpine AS production
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install --omit=dev
+COPY --from=build /app/dist ./dist
+COPY docs ./docs
+COPY prisma ./prisma
+EXPOSE 3000
+CMD ["node", "dist/server.js"]
