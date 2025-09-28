@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ConsentStatus {
+  ACTIVE
+  REVOKED
+}
+
+model Consent {
+  id           String        @id @default(uuid())
+  clientId     String
+  customerId   String
+  scopes       String[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  status       ConsentStatus @default(ACTIVE)
+  auditLogs    AuditLog[]
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  type       String
+  actor      String
+  subject    String
+  payload    Json
+  consentId  String?
+  consent    Consent? @relation(fields: [consentId], references: [id])
+}

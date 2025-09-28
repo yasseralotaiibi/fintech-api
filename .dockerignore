@@ -20,3 +20,6 @@ tests
 scripts
 postman
 ./postgres-data
+node_modules
+dist
+coverage
